@@ -7,6 +7,9 @@ import BusinessIcon from '@mui/icons-material/Business';
 import GroupIcon from '@mui/icons-material/Group';
 import TuneIcon from '@mui/icons-material/Tune';
 import ExploreIcon from '@mui/icons-material/Explore';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import EventSeatIcon from '@mui/icons-material/EventSeat';
 
 const allItems = [
   { label: 'Dashboard', path: '/', icon: DashboardIcon, roles: ['admin', 'staff', 'faculty', 'student'] },
@@ -16,6 +19,9 @@ const allItems = [
   // { label: 'Rooms', path: '/rooms', icon: MeetingRoomIcon, roles: ['admin', 'staff', 'faculty', 'student'] },
   // { label: 'Inventory', path: '/inventory', icon: Inventory2Icon, roles: ['admin', 'staff', 'faculty', 'student'] },
   { label: 'Allocations', path: '/allocations', icon: EventAvailableIcon, roles: ['admin', 'staff', 'faculty', 'student'] },
+  { label: 'Slot System Upload', path: '/slot-system/upload', icon: ScheduleIcon, roles: ['admin', 'staff'] },
+  { label: 'Timetable Upload', path: '/timetable/upload', icon: CalendarMonthIcon, roles: ['admin', 'staff'] },
+  { label: 'Room Availability', path: '/rooms/availability', icon: EventSeatIcon, roles: ['admin', 'staff', 'faculty', 'student'] },
   { label: 'Policies', path: '/policies', icon: TuneIcon, roles: ['admin'] },
   // { label: 'Users', path: '/users', icon: GroupIcon, roles: ['admin'] },
 ];

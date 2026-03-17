@@ -12,6 +12,9 @@ import { BuildingExplorer } from '../features/entities/BuildingExplorer';
 // import { BuildingsPage } from '../features/entities/BuildingsPage';
 // import { UsersPage } from '../features/entities/UsersPage';
 import { PoliciesPage } from '../features/entities/PoliciesPage';
+import { SlotSystemUploadPage } from '../features/scheduling/SlotSystemUploadPage';
+import { TimetableUploadPage } from '../features/scheduling/TimetableUploadPage';
+import { RoomAvailabilityPage } from '../features/scheduling/RoomAvailabilityPage';
 
 function AppShell() {
   return (
@@ -24,6 +27,9 @@ function AppShell() {
         {/* <Route path="/rooms" element={<RoomsPage />} /> */}
         {/* <Route path="/inventory" element={<InventoryPage />} /> */}
         <Route path="/allocations" element={<AllocationsPage />} />
+        <Route path="/slot-system/upload" element={<SlotSystemUploadPage />} />
+        <Route path="/timetable/upload" element={<TimetableUploadPage />} />
+        <Route path="/rooms/availability" element={<RoomAvailabilityPage />} />
         {/* <Route path="/users" element={<UsersPage />} /> */}
         <Route path="/policies" element={<PoliciesPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
