@@ -5,11 +5,7 @@ import {
     Card,
     CardContent,
     Chip,
-    FormControl,
     Grid,
-    InputLabel,
-    MenuItem,
-    Select,
     Stack,
     Table,
     TableBody,
@@ -35,81 +31,20 @@ import { schedulingApi } from '../../services/schedulingApi';
 export function RoomAvailabilityPage() {
     const { notify } = useAlert();
 
-    // Slot systems
-    const [slotSystems, setSlotSystems] = useState([]);
-    const [selectedSystem, setSelectedSystem] = useState('');
-    const [fetchingSlotSystems, setFetchingSlotSystems] = useState(true);
-
-    // Slots for selected system
-    const [slots, setSlots] = useState([]);
-    const [selectedSlot, setSelectedSlot] = useState('');
-    const [fetchingSlots, setFetchingSlots] = useState(false);
-
     // Query inputs
     const [date, setDate] = useState(() => {
         const today = new Date();
         return today.toISOString().split('T')[0];
     });
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
 
     // Results
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState(null);
     const [error, setError] = useState('');
 
-    // Fetch slot systems on mount
-    useEffect(() => {
-        let mounted = true;
-        const fetchSystems = async () => {
-            try {
-                const res = await schedulingApi.getSlotSystems();
-                if (mounted) {
-                    setSlotSystems(res.data?.data?.slotSystems || []);
-                }
-            } catch (err) {
-                if (mounted) notify('Failed to load slot systems', 'error');
-            } finally {
-                if (mounted) setFetchingSlotSystems(false);
-            }
-        };
-        fetchSystems();
-        return () => { mounted = false; };
-    }, []);
-
-    // Fetch slots when system changes
-    useEffect(() => {
-        if (!selectedSystem) {
-            setSlots([]);
-            setSelectedSlot('');
-            return;
-        }
-
-        let mounted = true;
-        const fetchSlots = async () => {
-            setFetchingSlots(true);
-            setSelectedSlot('');
-            try {
-                const res = await schedulingApi.getSlotSystemById(selectedSystem);
-                const system = res.data?.data?.slotSystem;
-                if (mounted) {
-                    // Extract unique slot codes from the slots
-                    const systemSlots = system?.slots || [];
-                    const uniqueCodes = [...new Set(systemSlots.map((s) => s.slot_code || s.slotCode))];
-                    setSlots(uniqueCodes.sort());
-                }
-            } catch (err) {
-                if (mounted) {
-                    notify('Failed to load slots for this system', 'error');
-                    setSlots([]);
-                }
-            } finally {
-                if (mounted) setFetchingSlots(false);
-            }
-        };
-        fetchSlots();
-        return () => { mounted = false; };
-    }, [selectedSystem]);
-
-    const isValid = date && selectedSystem;
+    const isValid = !!date;
 
     const handleSearch = async () => {
         if (!isValid) return;
@@ -119,12 +54,11 @@ export function RoomAvailabilityPage() {
         setResults(null);
 
         try {
-            const res = await schedulingApi.getRoomAvailability({
-                date,
-                slotSystemId: selectedSystem,
-                slot: selectedSlot || undefined,
-            });
+            const params = { date };
+            if (startTime) params.startTime = startTime;
+            if (endTime) params.endTime = endTime;
 
+            const res = await schedulingApi.getRoomAvailability(params);
             setResults(res.data?.data || null);
         } catch (err) {
             const msg =
@@ -142,76 +76,57 @@ export function RoomAvailabilityPage() {
         <Box>
             <PageHeader
                 title="Room Availability"
-                subtitle="Check room availability by date and slot"
+                subtitle="Check room availability by date and time range"
             />
 
             {/* Filter Controls */}
             <Card sx={{ mt: 2 }}>
                 <CardContent>
-                    {fetchingSlotSystems ? (
-                        <LoadingState message="Loading slot systems..." />
-                    ) : (
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="flex-end">
-                            <TextField
-                                id="availability-date"
-                                label="Date"
-                                type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                InputLabelProps={{ shrink: true }}
-                                required
-                                sx={{ minWidth: 160 }}
-                            />
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="flex-end">
+                        <TextField
+                            id="availability-date"
+                            label="Date"
+                            type="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                            required
+                            sx={{ minWidth: 160 }}
+                        />
 
-                            <FormControl sx={{ minWidth: 220 }} required>
-                                <InputLabel id="avail-slot-system-label">Slot System</InputLabel>
-                                <Select
-                                    labelId="avail-slot-system-label"
-                                    id="avail-slot-system-select"
-                                    value={selectedSystem}
-                                    onChange={(e) => setSelectedSystem(e.target.value)}
-                                    label="Slot System"
-                                >
-                                    {slotSystems.map((sys) => (
-                                        <MenuItem key={sys.id} value={sys.id}>
-                                            {sys.name}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                        <TextField
+                            id="availability-start-time"
+                            label="Start Time"
+                            type="time"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                            helperText="Optional"
+                            sx={{ minWidth: 140 }}
+                        />
 
-                            <FormControl sx={{ minWidth: 140 }} disabled={fetchingSlots || slots.length === 0}>
-                                <InputLabel id="avail-slot-label">Slot</InputLabel>
-                                <Select
-                                    labelId="avail-slot-label"
-                                    id="avail-slot-select"
-                                    value={selectedSlot}
-                                    onChange={(e) => setSelectedSlot(e.target.value)}
-                                    label="Slot"
-                                >
-                                    <MenuItem value="">
-                                        <em>All Slots</em>
-                                    </MenuItem>
-                                    {slots.map((code) => (
-                                        <MenuItem key={code} value={code}>
-                                            {code}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                        <TextField
+                            id="availability-end-time"
+                            label="End Time"
+                            type="time"
+                            value={endTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                            helperText="Optional"
+                            sx={{ minWidth: 140 }}
+                        />
 
-                            <Button
-                                variant="contained"
-                                onClick={handleSearch}
-                                disabled={!isValid || loading}
-                                startIcon={<SearchIcon />}
-                                id="avail-search-btn"
-                                sx={{ minWidth: 120 }}
-                            >
-                                Search
-                            </Button>
-                        </Stack>
-                    )}
+                        <Button
+                            variant="contained"
+                            onClick={handleSearch}
+                            disabled={!isValid || loading}
+                            startIcon={<SearchIcon />}
+                            id="avail-search-btn"
+                            sx={{ minWidth: 120 }}
+                        >
+                            Search
+                        </Button>
+                    </Stack>
                 </CardContent>
             </Card>
 
